@@ -29,6 +29,12 @@ static InterpretResult run() {
     constant_ += (uint32_t)READ_BYTE() * UINT8_COUNT * UINT8_COUNT; \
     g_VM.chunk->constants.values[constant_]; \
   })
+#define BINARY_OP(op) \
+  do { \
+    double b = pop(); \
+    double a = pop(); \
+    push(a op b); \
+  } while (false)
   for (;;) {
 #ifdef DEBUG_TRACE_EXECUTION
     for (size_t i = 0; i < 10; i++) {
@@ -56,6 +62,18 @@ static InterpretResult run() {
           push(constant);
           break;
         }
+      case OP_ADD:
+        BINARY_OP(+);
+        break;
+      case OP_SUBTRACT:
+        BINARY_OP(-);
+        break;
+      case OP_MULTIPLY:
+        BINARY_OP(*);
+        break;
+      case OP_DIVIDE:
+        BINARY_OP(/);
+        break;
       case OP_NEGATE:
         {
           push(-pop());
@@ -69,6 +87,7 @@ static InterpretResult run() {
         }
     }
   }
+#undef BINARY_OP
 #undef READ_LONG_CONSTANT
 #undef READ_CONSTANT
 #undef READ_BYTE
