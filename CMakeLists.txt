@@ -27,6 +27,8 @@ project(
   HOMEPAGE_URL "https://craftinginterpreters.com"
 )
 
+option(DEBUG_TRACE_EXECUTION "Trace execution" ON)
+
 add_subdirectory(apps)
 add_subdirectory(source)
 add_subdirectory(tests)

@@ -2,6 +2,10 @@
 
 #include <clox/vm.h>
 
+#ifdef DEBUG_TRACE_EXECUTION
+#  include <clox/debug.h>
+#endif
+
 static Vm g_VM;
 
 void initVm() {
@@ -21,6 +25,9 @@ static InterpretResult run() {
     g_VM.chunk->constants.values[constant]; \
   })
   for (;;) {
+#ifdef DEBUG_TRACE_EXECUTION
+    disassembleInstruction(g_VM.chunk, (int)(g_VM.ip - g_VM.chunk->code));
+#endif
     uint8_t instruction;
     switch ((instruction = READ_BYTE())) {
       case OP_CONSTANT:

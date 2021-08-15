@@ -9,10 +9,6 @@ int main(void) {
   initChunk(&chunk);
 
   writeConstant(&chunk, 1.2, 123);
-  for (int i = 0; i < 260; ++i)
-  {
-    writeConstant(&chunk, i, 123);
-  }
   writeChunk(&chunk, OP_RETURN, 123);
 
   disassembleChunk(&chunk, "test chunk");
