@@ -24,10 +24,10 @@ static InterpretResult run() {
 #define READ_CONSTANT() (g_VM.chunk->constants.values[READ_BYTE()])
 #define READ_LONG_CONSTANT() \
   ({ \
-    uint32_t constant = READ_BYTE(); \
-    constant += (uint32_t)READ_BYTE() * UINT8_COUNT; \
-    constant += (uint32_t)READ_BYTE() * UINT8_COUNT * UINT8_COUNT; \
-    g_VM.chunk->constants.values[constant]; \
+    uint32_t constant_ = READ_BYTE(); \
+    constant_ += (uint32_t)READ_BYTE() * UINT8_COUNT; \
+    constant_ += (uint32_t)READ_BYTE() * UINT8_COUNT * UINT8_COUNT; \
+    g_VM.chunk->constants.values[constant_]; \
   })
   for (;;) {
 #ifdef DEBUG_TRACE_EXECUTION
@@ -42,8 +42,8 @@ static InterpretResult run() {
     fputs("\n", stdout);
     disassembleInstruction(g_VM.chunk, (int)(g_VM.ip - g_VM.chunk->code));
 #endif
-    uint8_t instruction;
-    switch ((instruction = READ_BYTE())) {
+    uint8_t instruction = READ_BYTE();
+    switch (instruction) {
       case OP_CONSTANT:
         {
           Value constant = READ_CONSTANT();
@@ -54,6 +54,11 @@ static InterpretResult run() {
         {
           Value constant = READ_LONG_CONSTANT();
           push(constant);
+          break;
+        }
+      case OP_NEGATE:
+        {
+          push(-pop());
           break;
         }
       case OP_RETURN:
