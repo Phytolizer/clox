@@ -35,6 +35,7 @@ static InterpretResult run() {
           Value constant = READ_LONG_CONSTANT();
           printValue(constant);
           printf("\n");
+          break;
         }
       case OP_RETURN:
         {
