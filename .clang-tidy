@@ -1,5 +1,5 @@
 ---
-Checks: "clang-diagnostic-*,clang-analyzer-*"
+Checks: "clang-diagnostic-*,clang-analyzer-*,readability-identifier-naming"
 WarningsAsErrors: ""
 HeaderFilterRegex: ""
 AnalyzeTemporaryDtors: false
@@ -41,5 +41,9 @@ CheckOptions:
     value: "0"
   - key: google-readability-function-size.StatementThreshold
     value: "800"
+  - key: readability-identifier-naming.GlobalVariableCase
+    value: "UPPER_CASE"
+  - key: readability-identifier-naming.GlobalVariablePrefix
+    value: "g_"
 ---
 

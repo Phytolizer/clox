@@ -12,8 +12,7 @@ typedef enum op_code_e
   OP_RETURN,
 } OpCode;
 
-typedef struct chunk_s
-{
+typedef struct chunk_s {
   int count;
   int capacity;
   uint8_t* code;

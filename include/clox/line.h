@@ -1,14 +1,12 @@
 #ifndef CLOX_LINE_H_
 #define CLOX_LINE_H_
 
-typedef struct line_s
-{
+typedef struct line_s {
   int line;
   int length;
 } Line;
 
-typedef struct line_array_s
-{
+typedef struct line_array_s {
   int count;
   int capacity;
   Line* lines;
