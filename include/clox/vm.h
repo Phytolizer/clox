@@ -8,7 +8,7 @@
 typedef struct vm_s {
   Chunk* chunk;
   uint8_t* ip;
-  Value stack[STACK_MAX];
+  ValueArray stack;
   Value* stackTop;
 } Vm;
 

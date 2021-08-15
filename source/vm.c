@@ -9,10 +9,11 @@
 static Vm g_VM;
 
 static void resetStack() {
-  g_VM.stackTop = g_VM.stack;
+  g_VM.stackTop = g_VM.stack.values;
 }
 
 void initVm() {
+  initValueArray(&g_VM.stack);
   resetStack();
 }
 
@@ -40,7 +41,7 @@ static InterpretResult run() {
     for (size_t i = 0; i < 10; i++) {
       fputc(' ', stdout);
     }
-    for (Value* slot = g_VM.stack; slot < g_VM.stackTop; slot++) {
+    for (Value* slot = g_VM.stack.values; slot < g_VM.stackTop; slot++) {
       fputs("[ ", stdout);
       printValue(*slot);
       fputs(" ]", stdout);
@@ -100,8 +101,13 @@ InterpretResult interpret(Chunk* chunk) {
 }
 
 void push(Value value) {
-  *g_VM.stackTop = value;
-  g_VM.stackTop++;
+  if (g_VM.stackTop - g_VM.stack.values == g_VM.stack.count) {
+    writeValueArray(&g_VM.stack, value);
+    g_VM.stackTop = g_VM.stack.values + g_VM.stack.count;
+  } else {
+    *g_VM.stackTop = value;
+    g_VM.stackTop++;
+  }
 }
 
 Value pop(void) {
