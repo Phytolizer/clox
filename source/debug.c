@@ -12,7 +12,7 @@ static int constantInstruction(const char* name, Chunk* chunk, int offset) {
   uint8_t constant = chunk->code[offset + 1];
   printf("%-16s %4d '", name, constant);
   printValue(chunk->constants.values[constant]);
-  printf("'\n");
+  fputs("'\n", stdout);
   return offset + 2;
 }
 
@@ -22,7 +22,7 @@ static int constantLongInstruction(const char* name, Chunk* chunk, int offset) {
   constant += (uint32_t)(chunk->code[offset + 3]) * UINT8_COUNT * UINT8_COUNT;
   printf("%-16s %4d '", name, constant);
   printValue(chunk->constants.values[constant]);
-  printf("'\n");
+  fputs("'\n", stdout);
   return offset + 4;
 }
 
@@ -38,7 +38,7 @@ int disassembleInstruction(Chunk* chunk, int offset) {
   printf("%04d ", offset);
   if (offset > 0
       && getLine(&chunk->lines, offset) == getLine(&chunk->lines, offset - 1)) {
-    printf("   | ");
+    fputs("   | ", stdout);
   } else {
     printf("%4d ", getLine(&chunk->lines, offset));
   }
