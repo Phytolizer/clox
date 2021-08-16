@@ -95,9 +95,20 @@ static InterpretResult run() {
 #undef READ_BYTE
 }
 
+#define CHUNK_CLEANUP __attribute__((cleanup(freeChunk)))
+
 InterpretResult interpret(const char source[static 1]) {
-  compile(source);
-  return INTERPRET_OK;
+  Chunk CHUNK_CLEANUP chunk;
+  initChunk(&chunk);
+
+  if (!compile(source, &chunk)) {
+    return INTERPRET_COMPILE_ERROR;
+  }
+
+  g_VM.chunk = &chunk;
+  g_VM.ip = g_VM.chunk->code;
+
+  return run();
 }
 
 void push(Value value) {

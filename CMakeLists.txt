@@ -28,6 +28,7 @@ project(
 )
 
 option(DEBUG_TRACE_EXECUTION "Trace execution" ON)
+option(DEBUG_PRINT_CODE "Print code compiled" ON)
 
 add_subdirectory(apps)
 add_subdirectory(source)

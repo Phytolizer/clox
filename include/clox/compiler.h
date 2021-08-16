@@ -5,6 +5,8 @@
 #ifndef COMPILER_H_
 #define COMPILER_H_
 
-void compile(const char source[static 1]);
+#include "vm.h"
+
+bool compile(const char source[1], Chunk* chunk);
 
 #endif    // COMPILER_H_
