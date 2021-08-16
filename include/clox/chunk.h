@@ -15,6 +15,7 @@
   X(SUBTRACT) \
   X(MULTIPLY) \
   X(DIVIDE) \
+  X(NOT) \
   X(NEGATE) \
   X(RETURN)
 
