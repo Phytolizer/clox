@@ -21,7 +21,7 @@ typedef enum interpret_result_e
 
 void initVm();
 void freeVm();
-InterpretResult interpret(Chunk* chunk);
+InterpretResult interpret(const char source[static 1]);
 void push(Value value);
 Value pop(void);
 

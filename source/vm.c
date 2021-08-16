@@ -3,6 +3,7 @@
 #include <clox/vm.h>
 
 #ifdef DEBUG_TRACE_EXECUTION
+#  include <clox/compiler.h>
 #  include <clox/debug.h>
 #endif
 
@@ -94,10 +95,9 @@ static InterpretResult run() {
 #undef READ_BYTE
 }
 
-InterpretResult interpret(Chunk* chunk) {
-  g_VM.chunk = chunk;
-  g_VM.ip = chunk->code;
-  return run();
+InterpretResult interpret(const char source[static 1]) {
+  compile(source);
+  return INTERPRET_OK;
 }
 
 void push(Value value) {
