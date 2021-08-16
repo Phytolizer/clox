@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include <clox/memory.h>
+#include <clox/object.h>
 #include <clox/value.h>
 
 void initValueArray(ValueArray* array) {
@@ -35,6 +36,9 @@ void printValue(Value value) {
       break;
     case VAL_NUMBER:
       printf("%g", AS_NUMBER(value));
+      break;
+    case VAL_OBJ:
+      printObject(value);
       break;
   }
 }

@@ -54,6 +54,7 @@ static void unary(void);
 static void binary(void);
 static void number(void);
 static void literal(void);
+static void string(void);
 
 static const ParseRule g_RULES[] = {
     [TOKEN_LEFT_PAREN] = {grouping, NULL, PREC_NONE},
@@ -76,7 +77,7 @@ static const ParseRule g_RULES[] = {
     [TOKEN_LESS] = {NULL, binary, PREC_COMPARISON},
     [TOKEN_LESS_EQUAL] = {NULL, binary, PREC_COMPARISON},
     [TOKEN_IDENTIFIER] = {NULL, NULL, PREC_NONE},
-    [TOKEN_STRING] = {NULL, NULL, PREC_NONE},
+    [TOKEN_STRING] = {string, NULL, PREC_NONE},
     [TOKEN_NUMBER] = {number, NULL, PREC_NONE},
     [TOKEN_AND] = {NULL, NULL, PREC_NONE},
     [TOKEN_CLASS] = {NULL, NULL, PREC_NONE},
@@ -307,6 +308,11 @@ void literal(void) {
     default:
       assert(false);
   }
+}
+
+void string(void) {
+  emitConstant(OBJ_VAL(
+      copyString(g_PARSER.previous.length - 2, g_PARSER.previous.start + 1)));
 }
 
 bool compile(const char source[static 1], Chunk* chunk) {

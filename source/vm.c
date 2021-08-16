@@ -1,7 +1,9 @@
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <clox/compiler.h>
+#include <clox/memory.h>
 #include <clox/vm.h>
 
 #ifdef DEBUG_TRACE_EXECUTION
@@ -51,7 +53,27 @@ static bool valuesEqual(Value a, Value b) {
       return IS_NIL(b);
     case VAL_NUMBER:
       return IS_NUMBER(b) && AS_NUMBER(a) == AS_NUMBER(b);
+    case VAL_OBJ:
+      {
+        ObjString* aString = AS_STRING(a);
+        ObjString* bString = AS_STRING(b);
+        return aString->length == bString->length
+            && strncmp(aString->chars, bString->chars, aString->length) == 0;
+      }
   }
+}
+
+static void concatenate() {
+  ObjString* b = AS_STRING(pop());
+  ObjString* a = AS_STRING(pop());
+
+  int length = a->length + b->length;
+  char* chars = ALLOCATE(char, length + 1);
+  memcpy(chars, a->chars, a->length);
+  memcpy(chars + a->length, b->chars, b->length);
+  chars[length] = 0;
+  ObjString* result = takeString(length, chars);
+  push(OBJ_VAL(result));
 }
 
 static InterpretResult run() {
@@ -124,7 +146,16 @@ static InterpretResult run() {
         BINARY_OP(BOOL_VAL, <);
         break;
       case OP_ADD:
-        BINARY_OP(NUMBER_VAL, +);
+        if (IS_STRING(peek(0)) && IS_STRING(peek(1))) {
+          concatenate();
+        } else if (IS_NUMBER(peek(0)) && IS_NUMBER(peek(1))) {
+          double b = AS_NUMBER(pop());
+          double a = AS_NUMBER(pop());
+          push(NUMBER_VAL(a + b));
+        } else {
+          runtimeError("Operands must be two numbers or two strings.");
+          return INTERPRET_RUNTIME_ERROR;
+        }
         break;
       case OP_SUBTRACT:
         BINARY_OP(NUMBER_VAL, -);
