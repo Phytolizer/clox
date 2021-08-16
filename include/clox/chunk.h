@@ -11,6 +11,9 @@
   X(NIL) \
   X(TRUE) \
   X(FALSE) \
+  X(EQUAL) \
+  X(GREATER) \
+  X(LESS) \
   X(ADD) \
   X(SUBTRACT) \
   X(MULTIPLY) \
