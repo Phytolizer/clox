@@ -1,9 +1,10 @@
+#include <stdarg.h>
 #include <stdio.h>
 
+#include <clox/compiler.h>
 #include <clox/vm.h>
 
 #ifdef DEBUG_TRACE_EXECUTION
-#  include <clox/compiler.h>
 #  include <clox/debug.h>
 #endif
 
@@ -13,12 +14,29 @@ static void resetStack() {
   g_VM.stackTop = g_VM.stack.values;
 }
 
+static void runtimeError(const char format[static 1], ...) {
+  va_list args;
+  va_start(args, format);
+  vfprintf(stderr, format, args);
+  va_end(args);
+  fputs("\n", stderr);
+
+  size_t instruction = g_VM.ip - g_VM.chunk->code - 1;
+  int line = getLine(&g_VM.chunk->lines, (int)instruction);
+  fprintf(stderr, "[line %d] in script\n", line);
+  resetStack();
+}
+
 void initVm() {
   initValueArray(&g_VM.stack);
   resetStack();
 }
 
 void freeVm() {
+}
+
+static Value peek(int distance) {
+  return g_VM.stackTop[-1 - distance];
 }
 
 static InterpretResult run() {
@@ -31,11 +49,15 @@ static InterpretResult run() {
     constant_ += (uint32_t)READ_BYTE() * UINT8_COUNT * UINT8_COUNT; \
     g_VM.chunk->constants.values[constant_]; \
   })
-#define BINARY_OP(op) \
+#define BINARY_OP(valueType, op) \
   do { \
-    double b = pop(); \
-    double a = pop(); \
-    push(a op b); \
+    if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) { \
+      runtimeError("Operands must be numbers."); \
+      return INTERPRET_RUNTIME_ERROR; \
+    } \
+    double b = AS_NUMBER(pop()); \
+    double a = AS_NUMBER(pop()); \
+    push(valueType(a op b)); \
   } while (false)
   for (;;) {
 #ifdef DEBUG_TRACE_EXECUTION
@@ -64,21 +86,34 @@ static InterpretResult run() {
           push(constant);
           break;
         }
+      case OP_NIL:
+        push(NIL_VAL);
+        break;
+      case OP_TRUE:
+        push(BOOL_VAL(true));
+        break;
+      case OP_FALSE:
+        push(BOOL_VAL(false));
+        break;
       case OP_ADD:
-        BINARY_OP(+);
+        BINARY_OP(NUMBER_VAL, +);
         break;
       case OP_SUBTRACT:
-        BINARY_OP(-);
+        BINARY_OP(NUMBER_VAL, -);
         break;
       case OP_MULTIPLY:
-        BINARY_OP(*);
+        BINARY_OP(NUMBER_VAL, *);
         break;
       case OP_DIVIDE:
-        BINARY_OP(/);
+        BINARY_OP(NUMBER_VAL, /);
         break;
       case OP_NEGATE:
         {
-          push(-pop());
+          if (!IS_NUMBER(peek(0))) {
+            runtimeError("Operand must be a number.");
+            return INTERPRET_RUNTIME_ERROR;
+          }
+          push(NUMBER_VAL(-AS_NUMBER(pop())));
           break;
         }
       case OP_RETURN:

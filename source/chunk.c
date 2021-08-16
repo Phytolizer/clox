@@ -5,6 +5,14 @@
 #include <clox/memory.h>
 #include <clox/value.h>
 
+const char* const g_OP_CODE_NAMES[] = {
+#define STRINGIZE(x) #x
+#define X(x) STRINGIZE(OP_##x),
+    OPCODES_
+#undef X
+#undef STRINGIZE
+};
+
 void initChunk(Chunk* chunk) {
   chunk->count = 0;
   chunk->capacity = 0;

@@ -5,17 +5,27 @@
 #include "line.h"
 #include "value.h"
 
+#define OPCODES_ \
+  X(CONSTANT) \
+  X(CONSTANT_LONG) \
+  X(NIL) \
+  X(TRUE) \
+  X(FALSE) \
+  X(ADD) \
+  X(SUBTRACT) \
+  X(MULTIPLY) \
+  X(DIVIDE) \
+  X(NEGATE) \
+  X(RETURN)
+
 typedef enum op_code_e
 {
-  OP_CONSTANT,
-  OP_CONSTANT_LONG,
-  OP_ADD,
-  OP_SUBTRACT,
-  OP_MULTIPLY,
-  OP_DIVIDE,
-  OP_NEGATE,
-  OP_RETURN,
+#define X(x) OP_##x,
+  OPCODES_
+#undef X
 } OpCode;
+
+extern const char* const g_OP_CODE_NAMES[];
 
 typedef struct chunk_s {
   int count;

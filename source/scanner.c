@@ -142,7 +142,8 @@ static Token number() {
   return makeToken(TOKEN_NUMBER);
 }
 
-static TokenType checkKeyword(int start,
+static TokenType checkKeyword(
+    int start,
     int length,
     const char rest[length],
     TokenType type) {
