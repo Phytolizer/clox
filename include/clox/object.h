@@ -13,6 +13,7 @@ typedef enum obj_type_e
 
 struct obj_s {
   ObjType type;
+  struct obj_s* next;
 };
 
 struct obj_string_s {

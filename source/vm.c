@@ -10,7 +10,8 @@
 #  include <clox/debug.h>
 #endif
 
-static Vm g_VM;
+// not static due to usage in object.c
+Vm g_VM;
 
 static void resetStack() {
   g_VM.stackTop = g_VM.stack.values;
@@ -31,10 +32,12 @@ static void runtimeError(const char format[static 1], ...) {
 
 void initVm() {
   initValueArray(&g_VM.stack);
+  g_VM.objects = NULL;
   resetStack();
 }
 
 void freeVm() {
+  freeObjects();
 }
 
 static Value peek(int distance) {

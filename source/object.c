@@ -8,13 +8,18 @@
 #include <clox/memory.h>
 #include <clox/object.h>
 #include <clox/value.h>
+#include <clox/vm.h>
 
 #define ALLOCATE_OBJ(type, objectType) \
   (type*)allocateObject(sizeof(type), objectType)
 
+extern Vm g_VM;
+
 static Obj* allocateObject(size_t size, ObjType type) {
   Obj* object = (Obj*)reallocate(NULL, 0, size);
   object->type = type;
+  object->next = g_VM.objects;
+  g_VM.objects = object;
   return object;
 }
 

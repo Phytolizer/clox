@@ -10,6 +10,7 @@ typedef struct vm_s {
   uint8_t* ip;
   ValueArray stack;
   Value* stackTop;
+  Obj* objects;
 } Vm;
 
 typedef enum interpret_result_e
