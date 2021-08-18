@@ -26,6 +26,26 @@ static int constantLongInstruction(const char* name, Chunk* chunk, int offset) {
   return offset + 4;
 }
 
+static int byteInstruction(
+    const char name[static 1],
+    Chunk* chunk,
+    int offset) {
+  uint8_t slot = chunk->code[offset + 1];
+  printf("%-16s %4d\n", name, slot);
+  return offset + 2;
+}
+
+static int threeByteInstruction(
+    const char name[static 1],
+    Chunk* chunk,
+    int offset) {
+  uint32_t slot = chunk->code[offset + 1]
+      + chunk->code[offset + 2] * UINT8_COUNT
+      + chunk->code[offset + 3] * UINT8_COUNT * UINT8_COUNT;
+  printf("%-16s %4d\n", name, slot);
+  return offset + 4;
+}
+
 void disassembleChunk(Chunk* chunk, const char* name) {
   printf("== %s ==\n", name);
 
@@ -57,6 +77,12 @@ int disassembleInstruction(Chunk* chunk, int offset) {
           g_OP_CODE_NAMES[instruction],
           chunk,
           offset);
+    case OP_GET_LOCAL:
+    case OP_SET_LOCAL:
+      return byteInstruction(g_OP_CODE_NAMES[instruction], chunk, offset);
+    case OP_GET_LOCAL_LONG:
+    case OP_SET_LOCAL_LONG:
+      return threeByteInstruction(g_OP_CODE_NAMES[instruction], chunk, offset);
     case OP_NIL:
     case OP_TRUE:
     case OP_FALSE:

@@ -101,14 +101,11 @@ static void concatenate() {
 
 static InterpretResult run() {
 #define READ_BYTE() (*g_VM.ip++)
+#define READ_THREE_BYTES() \
+  (READ_BYTE() + READ_BYTE() * UINT8_COUNT \
+   + READ_BYTE() * UINT8_COUNT * UINT8_COUNT)
 #define READ_CONSTANT() (g_VM.chunk->constants.values[READ_BYTE()])
-#define READ_LONG_CONSTANT() \
-  ({ \
-    uint32_t constant_ = READ_BYTE(); \
-    constant_ += (uint32_t)READ_BYTE() * UINT8_COUNT; \
-    constant_ += (uint32_t)READ_BYTE() * UINT8_COUNT * UINT8_COUNT; \
-    g_VM.chunk->constants.values[constant_]; \
-  })
+#define READ_LONG_CONSTANT() (g_VM.chunk->constants.values[READ_THREE_BYTES()])
 #define READ_STRING() AS_STRING(READ_CONSTANT())
 #define READ_STRING_LONG() AS_STRING(READ_LONG_CONSTANT())
 #define BINARY_OP(valueType, op) \
@@ -206,6 +203,22 @@ static InterpretResult run() {
             runtimeError("Undefined variable '%s'", name->chars);
             return INTERPRET_RUNTIME_ERROR;
           }
+          break;
+        }
+      case OP_GET_LOCAL:
+      case OP_GET_LOCAL_LONG:
+        {
+          uint8_t slot = (instruction == OP_GET_LOCAL) ? READ_BYTE()
+                                                       : READ_THREE_BYTES();
+          push(g_VM.stack.values[slot]);
+          break;
+        }
+      case OP_SET_LOCAL:
+      case OP_SET_LOCAL_LONG:
+        {
+          uint8_t slot = (instruction == OP_SET_LOCAL) ? READ_BYTE()
+                                                       : READ_THREE_BYTES();
+          g_VM.stack.values[slot] = pop();
           break;
         }
       case OP_EQUAL:
