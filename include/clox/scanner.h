@@ -65,7 +65,7 @@ typedef struct token_s {
   int line;
 } Token;
 
-extern const char* TOKEN_NAMES[];
+extern const char* g_TOKEN_NAMES[];
 
 void initScanner(const char source[static 1]);
 Token scanToken(void);

@@ -8,7 +8,7 @@
 #include <clox/common.h>
 #include <clox/scanner.h>
 
-const char* TOKEN_NAMES[] = {
+const char* g_TOKEN_NAMES[] = {
 #define STRINGIZE(x) #x
 #define X(x) STRINGIZE(TOKEN_##x),
     TOKENS_

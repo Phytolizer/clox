@@ -27,6 +27,8 @@ project(
   HOMEPAGE_URL "https://craftinginterpreters.com"
 )
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror=nonnull")
+
 option(DEBUG_TRACE_EXECUTION "Trace execution" ON)
 option(DEBUG_PRINT_CODE "Print code compiled" ON)
 

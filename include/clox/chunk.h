@@ -1,6 +1,7 @@
 #ifndef CLOX_CHUNK_H_
 #define CLOX_CHUNK_H_
 
+#include "attributes.h"
 #include "common.h"
 #include "line.h"
 #include "value.h"
@@ -41,10 +42,10 @@ typedef struct chunk_s {
   ValueArray constants;
 } Chunk;
 
-void initChunk(Chunk* chunk);
-void writeChunk(Chunk* chunk, uint8_t byte, int line);
-void freeChunk(Chunk* chunk);
-int addConstant(Chunk* chunk, Value value);
-int writeConstant(Chunk* chunk, Value value, int line);
+void initChunk(Chunk* chunk) ATTR_NONNULL(1);
+void writeChunk(Chunk* chunk, uint8_t byte, int line) ATTR_NONNULL(1);
+void freeChunk(Chunk* chunk) ATTR_NONNULL(1);
+int addConstant(Chunk* chunk, Value value) ATTR_NONNULL(1);
+int writeConstant(Chunk* chunk, Value value, int line) ATTR_NONNULL(1);
 
 #endif

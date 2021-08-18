@@ -1,6 +1,7 @@
 #ifndef CLOX_VALUE_H_
 #define CLOX_VALUE_H_
 
+#include "attributes.h"
 #include "common.h"
 
 typedef struct obj_s Obj;
@@ -45,9 +46,9 @@ typedef struct value_array_s {
   Value* values;
 } ValueArray;
 
-void initValueArray(ValueArray* array);
-void writeValueArray(ValueArray* array, Value value);
-void freeValueArray(ValueArray* array);
+void initValueArray(ValueArray* array) ATTR_NONNULL(1);
+void writeValueArray(ValueArray* array, Value value) ATTR_NONNULL(1);
+void freeValueArray(ValueArray* array) ATTR_NONNULL(1);
 void printValue(Value value);
 
 #endif
