@@ -196,6 +196,18 @@ static InterpretResult run() {
           push(value);
           break;
         }
+      case OP_SET_GLOBAL:
+      case OP_SET_GLOBAL_LONG:
+        {
+          ObjString* name = (instruction == OP_SET_GLOBAL) ? READ_STRING()
+                                                           : READ_STRING_LONG();
+          if (tableSet(&g_VM.globals, name, peek(0))) {
+            tableDelete(&g_VM.globals, name);
+            runtimeError("Undefined variable '%s'", name->chars);
+            return INTERPRET_RUNTIME_ERROR;
+          }
+          break;
+        }
       case OP_EQUAL:
         {
           Value b = pop();
