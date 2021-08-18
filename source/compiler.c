@@ -67,6 +67,7 @@ static void literal(void);
 static void string(void);
 static void declaration(void);
 static void statement(void);
+static void variable(void);
 
 #pragma endregion
 
@@ -92,7 +93,7 @@ static const ParseRule g_RULES[] = {
     [TOKEN_GREATER_EQUAL] = {NULL, binary, PREC_COMPARISON},
     [TOKEN_LESS] = {NULL, binary, PREC_COMPARISON},
     [TOKEN_LESS_EQUAL] = {NULL, binary, PREC_COMPARISON},
-    [TOKEN_IDENTIFIER] = {NULL, NULL, PREC_NONE},
+    [TOKEN_IDENTIFIER] = {variable, NULL, PREC_NONE},
     [TOKEN_STRING] = {string, NULL, PREC_NONE},
     [TOKEN_NUMBER] = {number, NULL, PREC_NONE},
     [TOKEN_AND] = {NULL, NULL, PREC_NONE},
@@ -255,8 +256,45 @@ static void number() {
 
 static void parsePrecedence(Precedence precedence);
 
+static uint32_t identifierConstant(Token* name) {
+  return makeConstant(OBJ_VAL(copyString(name->length, name->start)));
+}
+
+static uint32_t parseVariable(const char errorMessage[static 1]) {
+  consume(TOKEN_IDENTIFIER, errorMessage);
+  return identifierConstant(&g_PARSER.previous);
+}
+
+static void defineVariable(uint32_t global) {
+  if (global <= UINT8_MAX) {
+    emitByte(OP_DEFINE_GLOBAL);
+    emitByte(global);
+  } else {
+    emitByte(OP_DEFINE_GLOBAL_LONG);
+    emitByte(global % UINT8_COUNT);
+    global /= UINT8_COUNT;
+    emitByte(global % UINT8_COUNT);
+    global /= UINT8_COUNT;
+    emitByte(global % UINT8_COUNT);
+  }
+}
+
 static void expression() {
   parsePrecedence(PREC_ASSIGNMENT);
+}
+
+static void varDeclaration() {
+  uint32_t global = parseVariable("Expect variable name.");
+
+  if (match(TOKEN_EQUAL)) {
+    expression();
+  } else {
+    emitByte(OP_NIL);
+  }
+
+  consume(TOKEN_SEMICOLON, "Expect ';' after variable declaration.");
+
+  defineVariable(global);
 }
 
 static void expressionStatement() {
@@ -296,7 +334,11 @@ static void synchronize() {
 }
 
 static void declaration() {
-  statement();
+  if (match(TOKEN_VAR)) {
+    varDeclaration();
+  } else {
+    statement();
+  }
 
   if (g_PARSER.panicMode) {
     synchronize();
@@ -309,6 +351,23 @@ static void statement() {
   } else {
     expressionStatement();
   }
+}
+
+static void namedVariable(Token name) {
+  uint32_t arg = identifierConstant(&name);
+  if (arg <= UINT8_MAX) {
+    emitBytes(OP_GET_GLOBAL, arg);
+  } else {
+    emitBytes(OP_GET_GLOBAL_LONG, arg % UINT8_COUNT);
+    arg /= UINT8_COUNT;
+    emitByte(arg % UINT8_COUNT);
+    arg /= UINT8_COUNT;
+    emitByte(arg % UINT8_COUNT);
+  }
+}
+
+static void variable(void) {
+  namedVariable(g_PARSER.previous);
 }
 
 static void grouping() {

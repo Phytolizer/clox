@@ -13,6 +13,7 @@ typedef struct vm_s {
   Value* stackTop;
   Obj* objects;
   Table strings;
+  Table globals;
 } Vm;
 
 typedef enum interpret_result_e

@@ -13,6 +13,10 @@
   X(TRUE) \
   X(FALSE) \
   X(POP) \
+  X(DEFINE_GLOBAL) \
+  X(DEFINE_GLOBAL_LONG) \
+  X(GET_GLOBAL) \
+  X(GET_GLOBAL_LONG) \
   X(EQUAL) \
   X(GREATER) \
   X(LESS) \

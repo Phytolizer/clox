@@ -1,3 +1,5 @@
+#pragma region "includes"
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -10,12 +12,19 @@
 #  include <clox/debug.h>
 #endif
 
-// not static due to usage in object.c
+#pragma endregion
+
+// not static due to usage in other files
 Vm g_VM;
+
+#pragma region "error handling"
 
 static void resetStack() {
   g_VM.stackTop = g_VM.stack.values;
 }
+
+static void runtimeError(const char format[static 1], ...)
+    __attribute__((format(printf, 1, 2)));
 
 static void runtimeError(const char format[static 1], ...) {
   va_list args;
@@ -30,17 +39,27 @@ static void runtimeError(const char format[static 1], ...) {
   resetStack();
 }
 
+#pragma endregion
+
+#pragma region "init/deinit"
+
 void initVm() {
   initValueArray(&g_VM.stack);
   g_VM.objects = NULL;
   resetStack();
   initTable(&g_VM.strings);
+  initTable(&g_VM.globals);
 }
 
 void freeVm() {
   freeObjects();
   freeTable(&g_VM.strings);
+  freeTable(&g_VM.globals);
 }
+
+#pragma endregion
+
+#pragma region "utility functions"
 
 static Value peek(int distance) {
   return g_VM.stackTop[-1 - distance];
@@ -76,6 +95,10 @@ static void concatenate() {
   push(OBJ_VAL(result));
 }
 
+#pragma endregion
+
+#pragma region "the hot function, run()"
+
 static InterpretResult run() {
 #define READ_BYTE() (*g_VM.ip++)
 #define READ_CONSTANT() (g_VM.chunk->constants.values[READ_BYTE()])
@@ -86,6 +109,8 @@ static InterpretResult run() {
     constant_ += (uint32_t)READ_BYTE() * UINT8_COUNT * UINT8_COUNT; \
     g_VM.chunk->constants.values[constant_]; \
   })
+#define READ_STRING() AS_STRING(READ_CONSTANT())
+#define READ_STRING_LONG() AS_STRING(READ_LONG_CONSTANT())
 #define BINARY_OP(valueType, op) \
   do { \
     if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) { \
@@ -135,6 +160,42 @@ static InterpretResult run() {
       case OP_POP:
         pop();
         break;
+      case OP_DEFINE_GLOBAL:
+        {
+          ObjString* name = READ_STRING();
+          tableSet(&g_VM.globals, name, peek(0));
+          pop();
+          break;
+        }
+      case OP_DEFINE_GLOBAL_LONG:
+        {
+          ObjString* name = READ_STRING_LONG();
+          tableSet(&g_VM.globals, name, peek(0));
+          pop();
+          break;
+        }
+      case OP_GET_GLOBAL:
+        {
+          ObjString* name = READ_STRING();
+          Value value;
+          if (!tableGet(&g_VM.globals, name, &value)) {
+            runtimeError("Undefined variable '%s'", name->chars);
+            return INTERPRET_RUNTIME_ERROR;
+          }
+          push(value);
+          break;
+        }
+      case OP_GET_GLOBAL_LONG:
+        {
+          ObjString* name = READ_STRING_LONG();
+          Value value;
+          if (!tableGet(&g_VM.globals, name, &value)) {
+            runtimeError("Undefined variable '%s'", name->chars);
+            return INTERPRET_RUNTIME_ERROR;
+          }
+          push(value);
+          break;
+        }
       case OP_EQUAL:
         {
           Value b = pop();
@@ -194,12 +255,16 @@ static InterpretResult run() {
     }
   }
 #undef BINARY_OP
+#undef READ_STRING_LONG
+#undef READ_STRING
 #undef READ_LONG_CONSTANT
 #undef READ_CONSTANT
 #undef READ_BYTE
 }
 
-#define CHUNK_CLEANUP __attribute__((cleanup(freeChunk)))
+#pragma endregion
+
+#define CHUNK_CLEANUP ATTR_CLEANUP(freeChunk)
 
 InterpretResult interpret(const char source[static 1]) {
   Chunk CHUNK_CLEANUP chunk;
@@ -215,6 +280,8 @@ InterpretResult interpret(const char source[static 1]) {
   return run();
 }
 
+#pragma region "stack manipulation"
+
 void push(Value value) {
   if (g_VM.stackTop - g_VM.stack.values == g_VM.stack.count) {
     writeValueArray(&g_VM.stack, value);
@@ -229,3 +296,5 @@ Value pop(void) {
   g_VM.stackTop--;
   return *g_VM.stackTop;
 }
+
+#pragma endregion
