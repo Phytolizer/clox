@@ -20,9 +20,10 @@ struct obj_string_s {
   Obj obj;
   int length;
   char* chars;
+  uint32_t hash;
 };
 
-ObjString* copyString(int length, const char chars[length]);
+ObjString* copyString(int length, char chars[length]);
 ObjString* takeString(int length, char chars[length]);
 void printObject(Value value);
 

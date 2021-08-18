@@ -34,10 +34,12 @@ void initVm() {
   initValueArray(&g_VM.stack);
   g_VM.objects = NULL;
   resetStack();
+  initTable(&g_VM.strings);
 }
 
 void freeVm() {
   freeObjects();
+  freeTable(&g_VM.strings);
 }
 
 static Value peek(int distance) {
@@ -57,12 +59,7 @@ static bool valuesEqual(Value a, Value b) {
     case VAL_NUMBER:
       return IS_NUMBER(b) && AS_NUMBER(a) == AS_NUMBER(b);
     case VAL_OBJ:
-      {
-        ObjString* aString = AS_STRING(a);
-        ObjString* bString = AS_STRING(b);
-        return aString->length == bString->length
-            && strncmp(aString->chars, bString->chars, aString->length) == 0;
-      }
+      return AS_OBJ(a) == AS_OBJ(b);
   }
 }
 

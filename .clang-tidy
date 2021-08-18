@@ -45,5 +45,17 @@ CheckOptions:
     value: "UPPER_CASE"
   - key: readability-identifier-naming.GlobalVariablePrefix
     value: "g_"
+  - key: readability-identifier-naming.FunctionCase
+    value: camelBack
+  - key: readability-identifier-naming.TypedefCase
+    value: CamelCase
+  - key: readability-identifier-naming.StructCase
+    value: lower_case
+  - key: readability-identifier-naming.StructSuffix
+    value: _s
+  - key: readability-identifier-naming.EnumCase
+    value: lower_case
+  - key: readability-identifier-naming.EnumSuffix
+    value: _e
 ---
 
