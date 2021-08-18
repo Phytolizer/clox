@@ -45,7 +45,7 @@ static uint32_t hashString(int length, const char key[length]) {
   return hash;
 }
 
-ObjString* copyString(int length, char chars[length]) {
+ObjString* copyString(int length, const char chars[length]) {
   uint32_t hash = hashString(length, chars);
   ObjString* interned = tableFindString(&g_VM.strings, length, chars, hash);
   if (interned) {

@@ -54,6 +54,7 @@ int disassembleInstruction(Chunk* chunk, int offset) {
     case OP_NIL:
     case OP_TRUE:
     case OP_FALSE:
+    case OP_POP:
     case OP_EQUAL:
     case OP_GREATER:
     case OP_LESS:
@@ -64,6 +65,7 @@ int disassembleInstruction(Chunk* chunk, int offset) {
     case OP_NOT:
     case OP_NEGATE:
     case OP_RETURN:
+    case OP_PRINT:
       return simpleInstruction(g_OP_CODE_NAMES[instruction], offset);
     default:
       printf("Unknown opcode %d\n", instruction);

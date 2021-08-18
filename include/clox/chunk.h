@@ -11,6 +11,7 @@
   X(NIL) \
   X(TRUE) \
   X(FALSE) \
+  X(POP) \
   X(EQUAL) \
   X(GREATER) \
   X(LESS) \
@@ -20,6 +21,7 @@
   X(DIVIDE) \
   X(NOT) \
   X(NEGATE) \
+  X(PRINT) \
   X(RETURN)
 
 typedef enum op_code_e

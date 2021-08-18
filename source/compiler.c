@@ -2,6 +2,8 @@
 // Created by kyle on 8/15/21.
 //
 
+#pragma region "includes"
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,6 +15,10 @@
 #ifdef DEBUG_PRINT_CODE
 #  include <clox/debug.h>
 #endif
+
+#pragma endregion
+
+#pragma region "types"
 
 typedef struct parser_s {
   Token current;
@@ -49,12 +55,22 @@ typedef struct parse_rule_s {
   Precedence precedence;
 } ParseRule;
 
+#pragma endregion
+
+#pragma region "pre-declarations"
+
 static void grouping(void);
 static void unary(void);
 static void binary(void);
 static void number(void);
 static void literal(void);
 static void string(void);
+static void declaration(void);
+static void statement(void);
+
+#pragma endregion
+
+#pragma region "constants and globals"
 
 static const ParseRule g_RULES[] = {
     [TOKEN_LEFT_PAREN] = {grouping, NULL, PREC_NONE},
@@ -112,9 +128,13 @@ const char* const g_PRECEDENCE_NAMES[] = {
 Parser g_PARSER;
 Chunk* g_COMPILING_CHUNK;
 
+#pragma endregion
+
 static Chunk* currentChunk() {
   return g_COMPILING_CHUNK;
 }
+
+#pragma region "error handling"
 
 static void errorAt(Token* token, const char message[static 1]) {
   if (g_PARSER.panicMode) {
@@ -141,6 +161,10 @@ static void errorAtCurrent(const char message[static 1]) {
   errorAt(&g_PARSER.current, message);
 }
 
+#pragma endregion
+
+#pragma region "parser helpers"
+
 static void advance() {
   g_PARSER.previous = g_PARSER.current;
 
@@ -162,6 +186,23 @@ static void consume(TokenType type, const char message[static 1]) {
 
   errorAtCurrent(message);
 }
+
+static bool check(TokenType type) {
+  return g_PARSER.current.type == type;
+}
+
+static bool match(TokenType type) {
+  if (!check(type)) {
+    return false;
+  }
+
+  advance();
+  return true;
+}
+
+#pragma endregion
+
+#pragma region "compiler plumbing"
 
 static void emitByte(uint8_t byte) {
   writeChunk(currentChunk(), byte, g_PARSER.previous.line);
@@ -203,6 +244,10 @@ static void endCompiler() {
 #endif
 }
 
+#pragma endregion
+
+#pragma region "parsing functions"
+
 static void number() {
   double value = strtod(g_PARSER.previous.start, NULL);
   emitConstant(NUMBER_VAL(value));
@@ -212,6 +257,58 @@ static void parsePrecedence(Precedence precedence);
 
 static void expression() {
   parsePrecedence(PREC_ASSIGNMENT);
+}
+
+static void expressionStatement() {
+  expression();
+  consume(TOKEN_SEMICOLON, "Expect ';' after expression.");
+  emitByte(OP_POP);
+}
+
+static void printStatement() {
+  expression();
+  consume(TOKEN_SEMICOLON, "Expect ';' after value.");
+  emitByte(OP_PRINT);
+}
+
+static void synchronize() {
+  g_PARSER.panicMode = false;
+  while (g_PARSER.current.type != TOKEN_EOF) {
+    if (g_PARSER.previous.type == TOKEN_SEMICOLON) {
+      return;
+    }
+    switch (g_PARSER.current.type) {
+      case TOKEN_CLASS:
+      case TOKEN_FUN:
+      case TOKEN_VAR:
+      case TOKEN_FOR:
+      case TOKEN_IF:
+      case TOKEN_WHILE:
+      case TOKEN_PRINT:
+      case TOKEN_RETURN:
+        return;
+      default:
+        break;
+    }
+
+    advance();
+  }
+}
+
+static void declaration() {
+  statement();
+
+  if (g_PARSER.panicMode) {
+    synchronize();
+  }
+}
+
+static void statement() {
+  if (match(TOKEN_PRINT)) {
+    printStatement();
+  } else {
+    expressionStatement();
+  }
 }
 
 static void grouping() {
@@ -315,6 +412,8 @@ void string(void) {
       copyString(g_PARSER.previous.length - 2, g_PARSER.previous.start + 1)));
 }
 
+#pragma endregion
+
 bool compile(const char source[static 1], Chunk* chunk) {
   initScanner(source);
 
@@ -323,8 +422,11 @@ bool compile(const char source[static 1], Chunk* chunk) {
   g_PARSER.panicMode = false;
 
   advance();
-  expression();
-  consume(TOKEN_EOF, "Expect end of expression.");
+
+  while (!match(TOKEN_EOF)) {
+    declaration();
+  }
+
   endCompiler();
   return !g_PARSER.hadError;
 }
