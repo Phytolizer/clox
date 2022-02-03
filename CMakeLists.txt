@@ -8,7 +8,7 @@ project(
   HOMEPAGE_URL "https://github.com/Phytolizer/clox"
 )
 
-set(LOX_SRC "chunk.c")
+set(LOX_SRC "chunk.c" "memory.c")
 list(TRANSFORM LOX_SRC PREPEND "src/")
 add_library(lox ${LOX_SRC})
 target_include_directories(lox PUBLIC include)

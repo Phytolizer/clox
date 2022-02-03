@@ -57,5 +57,7 @@ CheckOptions:
     value: lower_case
   - key: readability-identifier-naming.EnumSuffix
     value: _e
+  - key: readability-identifier-naming.EnumConstantCase
+    value: UPPER_CASE
 ---
 
