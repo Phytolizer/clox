@@ -11,6 +11,7 @@ project(
 set(LOX_SRC "chunk.c")
 list(TRANSFORM LOX_SRC PREPEND "src/")
 add_library(lox ${LOX_SRC})
+target_include_directories(lox PUBLIC include)
 
 add_executable(clox clox.c)
 target_link_libraries(clox lox)
